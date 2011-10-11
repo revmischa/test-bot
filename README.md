@@ -26,6 +26,7 @@ my $bot = Test::Bot::GitHub->new_with_options(
     source_dir => "$ENV{HOME}/myproject",
     tests_dir => "t",
     notification_modules => [ 'IRC' ],
+    port => 4000,
 );
 $bot->configure_notifications(
     irc_host => 'irc.int80.biz',

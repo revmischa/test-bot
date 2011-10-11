@@ -35,6 +35,13 @@ sub test_and_notify {
 
     my @to_notify;
     foreach my $commit (@commits) {
+        # check out commit, make sure that is what we are testing
+        unless ($self->checkout($commit)) {
+            warn "Failed to check out commit " . $commit->id . "\n";
+            next;
+        }
+
+        # run the tests
         $self->run_tests_for_commit($commit);
 
         next if $commit->test_success;
@@ -43,7 +50,23 @@ sub test_and_notify {
         push @to_notify, $commit;
     }
 
+    # send notifications of failed tests
     $self->notify(@to_notify);
+}
+
+# checkout $commit into $source_dir
+sub checkout {
+    my ($self, $commit) = @_;
+
+    my $source_dir = $self->source_dir;
+    die "Source directory $source_dir does not exist" unless -e $source_dir;
+    die "You do not have write access to $source_dir" unless -w $source_dir;
+
+    # this will have to change, obviously
+    my $id = $commit->id;
+    `cd $source_dir; git checkout $id`;
+
+    return 1;
 }
 
 1;
