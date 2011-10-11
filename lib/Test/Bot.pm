@@ -5,6 +5,22 @@ use AnyEvent;
 use Class::MOP;
 use Carp qw/croak/;
 
+our $VERSION = '0.01';
+
+=head1 NAME
+
+Test::Bot - Continuous integration bot for automatically running unit tests and notifying developers of failed tests
+
+=head1 SYNOPSIS
+
+See README
+
+=head1 AUTHOR
+
+Mischa Spiegelmock, C<< <revmischa at cpan.org> >>
+
+=cut
+
 #use Any::Moose 'X::Getopt'; # why the heck does this not work?
 with 'MouseX::Getopt';
 
