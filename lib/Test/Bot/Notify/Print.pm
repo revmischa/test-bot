@@ -1,6 +1,6 @@
 package Test::Bot::Notify::Print;
 
-use Any::Moose 'Role';
+use Any::Moose;
 with 'Test::Bot::Notify';
 
 # print commit info to stdout

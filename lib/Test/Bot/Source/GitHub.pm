@@ -104,7 +104,7 @@ sub parse_payload {
         push @commits, $commit;
     }
 
-    $self->test(@commits);
+    $self->test_and_notify(@commits);
 }
 
 sub install {

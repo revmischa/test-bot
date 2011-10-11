@@ -1,6 +1,6 @@
 package Test::Bot::Notify::IRC;
 
-use Any::Moose 'Role';
+use Any::Moose;
 with 'Test::Bot::Notify';
 
 use AnyEvent;
@@ -9,7 +9,6 @@ use AnyEvent::IRC::Client;
 has 'irc_host' => (
     is => 'rw',
     isa => 'Str',
-    required => 1,
 );
 
 has 'irc_port' => (
@@ -21,6 +20,7 @@ has 'irc_port' => (
 has 'irc_channel' => (
     is => 'rw',
     isa => 'Str',
+    default => '#db',
     required => 1,
 );
 
@@ -58,6 +58,7 @@ after notify => sub {
         },
 
         disconnect => sub {
+            warn "IRC client disconnected";
             $self->clear_irc_client;
             undef $client;
         },
@@ -77,16 +78,23 @@ after notify => sub {
     );
 
     $self->_irc_client($client);
+    $client->connect($self->irc_host, $self->irc_port, { nick => $self->irc_nick });
 };
 
 sub format_commit {
     my ($self, $commit) = @_;
 
-    my $status = $commit->test_success ? "\033[33mSUCCESS\033[0m" : "\033[34mFAILURE\033[0m";
+    my $status = $commit->test_success ? "\033[32mSUCCESS\033[0m" : "\033[31mFAILURE\033[0m";
     my $id = substr($commit->id, 0, 6);
     my $author = $commit->author || 'unknown';
+    my $msg = $commit->message;
 
-    return "Commit: $id author: $author status: $status";
+    my $output = $commit->test_output;
+
+    my $ret = "$id ($msg) status: $status";
+    $ret .= "\n$output" if $output;
+
+    return $ret;
 }
 
 1;

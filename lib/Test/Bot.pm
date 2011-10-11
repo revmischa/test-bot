@@ -3,6 +3,7 @@ package Test::Bot;
 use Any::Moose 'Role';
 use AnyEvent;
 use Class::MOP;
+use Carp qw/croak/;
 
 #use Any::Moose 'X::Getopt'; # why the heck does this not work?
 with 'MouseX::Getopt';
@@ -37,6 +38,20 @@ has 'test_harness_module' => (
     default => 'Aggregate',
 );
 
+has '_notify_instances' => (
+    is => 'rw',
+    isa => 'ArrayRef',
+    traits => [ 'Array' ],
+    handles => {
+        add_notify_module_instance => 'push',
+        notify_instances => 'elements',
+    },
+    default => sub { [] },
+);
+
+has '_configured_test_harness'  => ( is => 'rw', isa => 'Bool' );
+has '_configured_notifications' => ( is => 'rw', isa => 'Bool' );
+
 requires 'install';
 requires 'watch';
 
@@ -47,7 +62,8 @@ sub load_test_harness {
     my $harness_class = "Test::Bot::TestHarness::$harness";
     Class::MOP::load_class($harness_class);
     $harness_class->meta->apply($self);
-
+    print "+Loaded $harness test harness\n";
+    
     requires 'run_tests_for_commit';
 }
 
@@ -57,22 +73,61 @@ sub load_notify_modules {
     foreach my $module (@{ $self->notification_modules }) {
         my $notif_class = "Test::Bot::Notify::$module";
         Class::MOP::load_class($notif_class);
-        $notif_class->meta->apply($self);
-    }
+        my $i = $notif_class->new(
+            bot => $self,
+        );
+        $self->add_notify_module_instance($i);
 
-    requires 'notify';
+        print "+Loaded $module notification module\n";
+    }
 }
 
-sub setup {}
+sub notify {
+    my ($self, @commits) = @_;
+
+    $_->notify(@commits) for $self->notify_instances;
+}
+
+sub configure_test_harness {
+    my ($self, %config) = @_;
+
+    return if $self->_configured_test_harness;
+    
+    $self->load_test_harness;
+
+    while (my ($k, $v) = each %config) {
+        my $setter = $self->can($k) or croak "Unknown test harness setting $k";
+        $setter->($self, $v);
+    }
+
+    $self->_configured_test_harness(1);
+}
+
+sub configure_notifications {
+    my ($self, %config) = @_;
+
+    return if $self->_configured_notifications;
+
+    $self->load_notify_modules;
+
+    # prepare notify instances
+    foreach my $ni ($self->notify_instances) {
+        while (my ($k, $v) = each %config) {
+            my $setter = $ni->can($k) or next;
+            $setter->($ni, $v);
+        }
+        
+        $ni->setup;
+    }
+
+    $self->_configured_notifications(1);
+}
 
 sub run {
     my ($self) = @_;
 
-    # load requested modules
-    $self->load_test_harness;
-    $self->load_notify_modules;
-
-    $self->setup;
+    $self->configure_test_harness;
+    $self->configure_notifications;
 
     # listen...
     $self->install;
