@@ -27,6 +27,7 @@ my $bot = Test::Bot::GitHub->new_with_options(
     tests_dir => "t",
     notification_modules => [ 'IRC' ],
     port => 4000,
+    force => 1,  # overwrite local modifications?
 );
 $bot->configure_notifications(
     irc_host => 'irc.int80.biz',

@@ -64,7 +64,9 @@ sub checkout {
 
     # this will have to change, obviously
     my $id = $commit->id;
-    `cd $source_dir; git checkout $id`;
+    my $clean = $self->force ? "git clean -dfx; git reset --hard HEAD;" : '';
+    my $force = $self->force ? '-f' : '';
+    `cd $source_dir; git fetch; $clean; git checkout $force $id`;
 
     return 1;
 }

@@ -34,6 +34,10 @@ has 'source_dir' => (
     cmd_aliases => 's',
 );
 
+# forcibly check out the current commit we are testing?
+# warning: will overwrite local changes
+has 'force' => ( is => 'rw', isa => 'Bool' );
+
 has 'tests_dir' => (
     is => 'rw',
     isa => 'Str',
