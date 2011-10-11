@@ -4,6 +4,7 @@ use Any::Moose 'Role';
 with 'Test::Bot::TestHarness';
 
 use TAP::Harness;
+use File::Find;
 
 has 'tests_dir' => (
     is => 'rw',
@@ -16,11 +17,14 @@ has 'test_files' => (
     lazy_build => 1,
 );
 
+# dig up all .t files in tests_dir
 sub _build_test_files {
     my ($self) = @_;
 
     my $dir = $self->tests_dir;
-    return [ "$dir/uri_generation.t" ];
+    my @found;
+    find(sub { /\.t$/ && push @found, $File::Find::name; }, $dir);
+    return \@found;
 }
 
 sub run_tests_for_commit {
@@ -34,15 +38,17 @@ sub run_tests_for_commit {
     my $tests_dir = $self->tests_dir
         or die "tests_dir must be configured for aggregate test harness";
 
-    my $tests_run = 0;
-
+    # our harness
     my $harness = TAP::Harness->new({
         verbosity => -1,
     });
+
+    # run tests
     my $results = $harness->runtests(@{ $self->test_files });
 
+    # get failed tests
     my @failed_desc  = $results->failed;
-    my $success = $results->all_passed;
+    $success = $results->all_passed;
 
     unless ($success) {
         # list of failed tests
