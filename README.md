@@ -22,11 +22,10 @@ use FindBin;
 use lib "$FindBin::Bin/lib";
 use Test::Bot::GitHub;
 
-my $bot = Test::Bot::GitHub->new_with_options;
-
-# change these:
-$bot->configure_test_harness(
-    tests_dir => "/path/to/my/repo",
+my $bot = Test::Bot::GitHub->new_with_options(
+    source_dir => "$ENV{HOME}/myproject",
+    tests_dir => "t",
+    notification_modules => [ 'IRC' ],
 );
 $bot->configure_notifications(
     irc_host => 'irc.int80.biz',

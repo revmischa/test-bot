@@ -34,6 +34,15 @@ has 'source_dir' => (
     cmd_aliases => 's',
 );
 
+has 'tests_dir' => (
+    is => 'rw',
+    isa => 'Str',
+    required => 1,
+    traits => [ 'Getopt' ],
+    cmd_flag => 'tests-dir',
+    cmd_aliases => 't',
+);
+
 has 'notification_modules' => (
     is => 'rw',
     isa => 'ArrayRef[Str]',

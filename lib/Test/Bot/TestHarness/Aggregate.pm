@@ -4,28 +4,6 @@ use Any::Moose 'Role';
 with 'Test::Bot::TestHarness';
 
 use TAP::Harness;
-use File::Find;
-
-has 'tests_dir' => (
-    is => 'rw',
-    isa => 'Str',
-);
-
-has 'test_files' => (
-    is => 'rw',
-    isa => 'ArrayRef[Str]',
-    lazy_build => 1,
-);
-
-# dig up all .t files in tests_dir
-sub _build_test_files {
-    my ($self) = @_;
-
-    my $dir = $self->tests_dir;
-    my @found;
-    find(sub { /\.t$/ && push @found, $File::Find::name; }, $dir);
-    return \@found;
-}
 
 sub run_tests_for_commit {
     my ($self, $commit) = @_;
