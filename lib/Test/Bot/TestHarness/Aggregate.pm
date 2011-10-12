@@ -9,7 +9,7 @@ sub run_tests_for_commit {
     my ($self, $commit) = @_;
 
     my $success = 0;
-    my $output = 'No aggregate test output';
+    my $output = '';
 
     print "Testing commit " . $commit->id . ' by ' . $commit->author . "...\n\n";
 
@@ -19,6 +19,7 @@ sub run_tests_for_commit {
     # our harness
     my $harness = TAP::Harness->new({
         verbosity => -1,
+        errors => 1,
     });
 
     # run tests
@@ -30,9 +31,12 @@ sub run_tests_for_commit {
     $success = $results->all_passed;
 
     unless ($success) {
-        # list of failed tests
-        $output  = join("\n", map { " - Failed: $_" } @failed_desc);
-        $output .= join("\n", map { " - Exited unexpectedly: $_" } @exit_desc);
+        # list of unique failed tests
+        my %failed;
+        %failed = map { ($_ => 1) } (@failed_desc, @exit_desc);
+        
+        $output  = join("\n", map { " - Failed: $_" } keys %failed);
+        $output .= "\n" if $output;
     }
     
     $commit->test_success($success);
