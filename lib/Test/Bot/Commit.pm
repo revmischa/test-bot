@@ -48,6 +48,25 @@ has 'test_output' => (
     default => 'No test output',
 );
 
+
+has 'passed' => (
+    is => 'rw',
+    isa => 'ArrayRef[Str]',
+    default => sub { [] },
+);
+
+has 'failed' => (
+    is => 'rw',
+    isa => 'ArrayRef[Str]',
+    default => sub { [] },
+);
+
+has 'exited' => (
+    is => 'rw',
+    isa => 'ArrayRef[Str]',
+    default => sub { [] },
+);
+
 # timestamp, formatted for humans
 sub display_date {
     my ($self) = @_;
