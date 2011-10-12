@@ -5,4 +5,4 @@ use warnings;
 use Test::More tests => 2;
 
 ok("ok!");
-fail("bad!");
+fail("expecting failure");
