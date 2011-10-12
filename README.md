@@ -37,6 +37,9 @@ $bot->configure_notifications(
 $bot->run;
 ```
 
+If you specify force => 1, a `git clean -df` and `git checkout -f
+$commit` will be performed when running tests for a commit. This will
+delete untracked (and not ignored) files and changes, so be careful.
 
 If you are interested in using this program and would like to help
 develop it further, please let me know via github, email or IRC.

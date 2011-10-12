@@ -58,7 +58,6 @@ after notify => sub {
         },
 
         disconnect => sub {
-            warn "IRC client disconnected";
             $self->clear_irc_client;
             undef $client;
         },

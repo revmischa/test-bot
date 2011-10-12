@@ -1,3 +1,6 @@
+# Dummy notification module
+# Mostly worthless
+
 package Test::Bot::Notify::Print;
 
 use Any::Moose;
