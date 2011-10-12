@@ -3,6 +3,12 @@ package Test::Bot::TestHarness::Aggregate;
 use Any::Moose 'Role';
 with 'Test::Bot::TestHarness';
 
+has 'aggregate_verbosity' => (
+    is => 'rw',
+    isa => 'Int',
+    default => -1,
+);
+
 use TAP::Harness;
 
 sub run_tests_for_commit {
@@ -11,15 +17,17 @@ sub run_tests_for_commit {
     my $success = 0;
     my $output = '';
 
-    print "Testing commit " . $commit->id . ' by ' . $commit->author . "...\n\n";
+    my $desc = "Testing commit " . $commit->id;
+    $desc .= ' by ' . $commit->author if $commit->author;
+    $desc .= "...\n\n";
 
     my $tests_dir = $self->tests_dir
         or die "tests_dir must be configured for aggregate test harness";
 
     # our harness
     my $harness = TAP::Harness->new({
-        verbosity => -1,
         errors => 1,
+        verbosity => $self->aggregate_verbosity,
     });
 
     # run tests
@@ -28,7 +36,12 @@ sub run_tests_for_commit {
     # get failed tests
     my @failed_desc  = $results->failed;
     my @exit_desc  = $results->exit;
-    $success = $results->all_passed;
+    my @passed_desc  = $results->passed;
+    $commit->passed(\@passed_desc);
+    $commit->exited(\@exit_desc);
+    $commit->failed(\@failed_desc);
+
+    $success = $results->all_passed ? 1 : 0;
 
     unless ($success) {
         # list of unique failed tests
