@@ -9,6 +9,7 @@ has 'test_files' => (
     is => 'rw',
     isa => 'ArrayRef[Str]',
     lazy_build => 1,
+    clearer => 'reset_test_files',
 );
 
 # dig up all .t files in tests_dir
@@ -44,6 +45,9 @@ sub test_and_notify {
         # run the tests
         $self->run_tests_for_commit($commit);
 
+        # done with test files, should regenerate them for each commit
+        $self->reset_test_files;
+        
         next if $commit->test_success;
 
         # tests failed, notify
