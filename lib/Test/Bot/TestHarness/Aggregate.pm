@@ -25,12 +25,16 @@ sub run_tests_for_commit {
     my $results = $harness->runtests(@{ $self->test_files });
 
     # get failed tests
+    use Data::Dumper;
+    warn Dumper($results);
     my @failed_desc  = $results->failed;
+    my @exit_desc  = $results->exit;
     $success = $results->all_passed;
 
     unless ($success) {
         # list of failed tests
-        $output = join("\n", map { " - Failed: $_" } @failed_desc);
+        $output  = join("\n", map { " - Failed: $_" } @failed_desc);
+        $output .= join("\n", map { " - Exited unexpectedly: $_" } @exit_desc);
     }
     
     $commit->test_success($success);

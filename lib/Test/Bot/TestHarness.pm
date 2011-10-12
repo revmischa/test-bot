@@ -34,11 +34,11 @@ sub _build_test_files {
 sub test_and_notify {
     my ($self, @commits) = @_;
 
-    my @to_notify;
     foreach my $commit (@commits) {
         # check out commit, make sure that is what we are testing
         unless ($self->checkout($commit)) {
-            warn "Failed to check out commit " . $commit->id . "\n";
+            $commit->test_success(0);
+            $commit->test_output("Failed to check out commit");
             next;
         }
 
@@ -47,15 +47,10 @@ sub test_and_notify {
 
         # done with test files, should regenerate them for each commit
         $self->reset_test_files;
-        
-        next if $commit->test_success;
-
-        # tests failed, notify
-        push @to_notify, $commit;
     }
 
-    # send notifications of failed tests
-    $self->notify(@to_notify);
+    # send notifications of tests
+    $self->notify(@commits);
 }
 
 # checkout $commit into $source_dir
