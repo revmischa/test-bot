@@ -5,7 +5,7 @@ use AnyEvent;
 use Class::MOP;
 use Carp qw/croak/;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
