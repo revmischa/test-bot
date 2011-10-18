@@ -57,6 +57,16 @@ has 'notification_modules' => (
     default => sub { ['Print'] },
 );
 
+has 'preload_modules' => (
+    is => 'rw',
+    isa => 'ArrayRef[Str]',
+    required => 0,
+    traits => [ 'Getopt' ],
+    cmd_flag => 'preload',
+    cmd_aliases => 'p',
+    default => sub { ['Test::More'] },
+);
+
 has 'test_harness_module' => (
     is => 'rw',
     isa => 'Str',
@@ -152,9 +162,23 @@ sub configure_notifications {
     $self->_configured_notifications(1);
 }
 
+# preload libraries shared by tests
+sub load_preload_modules {
+    my ($self) = @_;
+
+    foreach my $module (@{ $self->preload_modules }) {
+        local $| = 1;
+        print "+Loading $module... ";
+        Class::MOP::load_class($module);
+        print "loaded.\n";
+    }
+}
+
 sub run {
     my ($self) = @_;
 
+    $self->load_preload_modules;
+    
     $self->configure_test_harness;
     $self->configure_notifications;
 
