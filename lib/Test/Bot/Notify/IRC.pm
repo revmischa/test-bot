@@ -71,7 +71,14 @@ after notify => sub {
                 $self->_connected(1);
             },
 
+            error => sub {
+                my ($con, $code, $message, $ircmsg) = @_;
+                warn "IRC error $code $message: $ircmsg\n";
+                $con->disconnect;
+            },
+            
             disconnect => sub {
+                warn "IRC client disconnected\n";
                 $self->_connected(0);
                 $self->clear_irc_client;
                 undef $client;
