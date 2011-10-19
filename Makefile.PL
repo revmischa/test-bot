@@ -25,6 +25,7 @@ WriteMakefile(
         'JSON' => 0,
         'DateTime' => 0,
         'DateTime::Format::ISO8601' => 0,
+        'Capture::Tiny' => 0,
     },
     dist                => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
     clean               => { FILES => 'Test-Bot-*' },

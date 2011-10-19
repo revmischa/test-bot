@@ -10,7 +10,7 @@ has 'aggregate_verbosity' => (
 );
 
 use TAP::Harness;
-use IO::Capture::Stderr;
+use Capture::Tiny qw/tee/;
 
 sub run_tests_for_commit {
     my ($self, $commit) = @_;
@@ -30,18 +30,13 @@ sub run_tests_for_commit {
         errors => 1,
         verbosity => $self->aggregate_verbosity,
     });
-
-    # capture stderr
-    my $capture = IO::Capture::Stderr->new;
-    $capture->start;
     
-    # run tests
-    my $results = $harness->runtests(@{ $self->test_files });
-
-    # get stderr
-    $capture->stop;
-    my @errs = $capture->read;
-
+    # run tests, capture stderr
+    my $results;
+    my ($stdout, $stderr) = tee {
+        $results = $harness->runtests(@{ $self->test_files });
+    };    
+    
     # get failed tests
     my @failed_desc  = $results->failed;
     my @exit_desc  = $results->exit;
@@ -62,7 +57,10 @@ sub run_tests_for_commit {
     }
 
     # append stderr capture
-    $output .= "Error output:\n  " . join("\n  ", @errs) if @errs;
+    if ($stderr) {
+        my @errs = split("\n", $stderr);
+        $output .= "Error output:\n  " . join("\n  ", @errs) if @errs;
+    }
     
     $commit->test_success($success);
     $commit->test_output($output);
