@@ -54,9 +54,11 @@ after notify => sub {
     my $send_notification = sub {
         foreach my $commit (@commits) {
             my $msg = $self->format_commit($commit) or next;
-            foreach my $line (split("\n", $msg)) {
-                $client->send_srv(PRIVMSG => $self->irc_channel, $line);
-            }
+
+            $client->send_long_message('utf-8', 0, PRIVMSG => $self->irc_channel, $msg);
+            $client->reg_cb(buffer_empty => sub {
+                $client->disconnect;
+            });
         }
     };
     
@@ -78,10 +80,9 @@ after notify => sub {
             },
             
             disconnect => sub {
-                warn "IRC client disconnected\n";
                 $self->_connected(0);
                 $self->clear_irc_client;
-                undef $client;
+                #undef $client;
             },
         
             registered => sub {
