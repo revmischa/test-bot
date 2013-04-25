@@ -15,6 +15,11 @@ sub parse_payload {
 
     my $parsed = decode_json($payload) or return;
 
+    # who pushed these commits?
+    my $pusher = $parsed->{pusher};
+    my $pusher_name = $pusher->{fullName} || 'An unknown user';
+    my $repo_name = $parsed->{repository}{name} || 'unknown repo';
+
     my $commit_info_ref = $parsed->{commits} || [];
     my $commit_count = @$commit_info_ref;
     my @commits;
@@ -43,6 +48,13 @@ sub parse_payload {
         my $commit = Test::Bot::Commit->new(%c);
         push @commits, $commit;
     }
+
+    # let's notify of the push right away
+    my $push_msg = "$pusher_name pushed $commit_count commit" .
+                      ($commit_count == 1 ? '' : 's') .
+                      " to $repo_name";
+    warn $push_msg;
+    $self->notify($push_msg);
 
     return @commits;
 }

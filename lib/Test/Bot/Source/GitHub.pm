@@ -5,7 +5,7 @@ with 'Test::Bot::Source';
 with 'Test::Bot::Source::Webhook';
 
 use JSON;
-use DateTime::Format::ISO8601;
+use DateTime::Format::Flexible;
 use Test::Bot::Commit;
 use Carp qw/croak/;
 
@@ -32,7 +32,7 @@ sub parse_payload {
         # parse commit date
         my $timestamp = $commit_info->{timestamp};
         if ($timestamp) {
-            my $dt = DateTime::Format::ISO8601->parse_datetime($timestamp);
+            my $dt = DateTime::Format::Flexible->parse_datetime($timestamp);
             $c{timestamp} = $dt if $dt;
         }
 

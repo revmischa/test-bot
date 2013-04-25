@@ -5,6 +5,12 @@ use File::Find;
 
 requires 'run_tests_for_commit';
 
+has 'tests_enabled' => (
+    is => 'rw',
+    isa => 'Bool',
+    default => 1,
+);
+
 has 'test_files' => (
     is => 'rw',
     isa => 'ArrayRef[Str]',
@@ -33,6 +39,8 @@ sub _build_test_files {
 # run unit tests for each commit, notify on failure
 sub test_and_notify {
     my ($self, @commits) = @_;
+
+    return unless $self->tests_enabled;
 
     foreach my $commit (@commits) {
         # check out commit, make sure that is what we are testing
