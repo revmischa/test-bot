@@ -1,6 +1,6 @@
 package Test::Bot::TestHarness::Aggregate;
 
-use Moose 'Role';
+use Moose::Role;
 with 'Test::Bot::TestHarness';
 
 has 'aggregate_verbosity' => (

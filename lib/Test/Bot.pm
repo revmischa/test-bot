@@ -121,9 +121,13 @@ sub load_notify_modules {
 }
 
 sub notify {
-    my ($self, @commits) = @_;
+    my ($self, @messages) = @_;
+    $_->notify(@messages) for $self->notify_instances;
+}
 
-    $_->notify(@commits) for $self->notify_instances;
+sub notify_commits {
+    my ($self, @commits) = @_;
+    $_->notify_commits(@commits) for $self->notify_instances;
 }
 
 sub configure_test_harness {

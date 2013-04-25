@@ -45,11 +45,11 @@ after 'setup' => sub {
     die "irc_channel is required" unless $self->irc_channel;
 };
 
-after 'notify' => {
+after 'notify' => sub {
     my ($self, @messages) = @_;
 
     my $client = $self->_irc_client && $self->_connected ?
-        $self->_irc_client : AnyEvent::IRC::Client->new;
+        $self->_irc_client : AnyEvent::IRC::Client->new(send_initial_whois => 1);
 
     unless ($self->_connected) {
         $client->reg_cb(
@@ -78,12 +78,13 @@ after 'notify' => {
                 my ($con) = @_;
 
                 # connected and ready to go
-                foreach my $msg (@messages) {
-                    $client->send_long_message('utf-8', 0, PRIVMSG => $self->irc_channel, $msg);
-                    $client->reg_cb(buffer_empty => sub {
-                        $client->disconnect;
-                    });
-                }
+                $client->reg_cb(buffer_empty => sub {
+                    # it would be cool to disconnect after sending out messages
+                    # but this event always fires waaay too early
+                    #$client->disconnect;
+                });
+                my $msg = join("\n", @messages);
+                my @lines = $client->send_long_message('utf-8', 0, PRIVMSG => $self->irc_channel, $msg);
             },
         );
 

@@ -50,7 +50,7 @@ sub test_and_notify {
     }
 
     # send notifications of tests
-    $self->notify(@commits);
+    $self->notify_commits(@commits);
 }
 
 # checkout $commit into $source_dir
