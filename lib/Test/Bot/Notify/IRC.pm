@@ -1,6 +1,6 @@
 package Test::Bot::Notify::IRC;
 
-use Any::Moose;
+use Moose;
 with 'Test::Bot::Notify';
 
 use AnyEvent;

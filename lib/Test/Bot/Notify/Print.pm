@@ -3,7 +3,7 @@
 
 package Test::Bot::Notify::Print;
 
-use Any::Moose;
+use Moose;
 with 'Test::Bot::Notify';
 
 # print commit info to stdout

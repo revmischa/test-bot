@@ -1,6 +1,6 @@
 package Test::Bot;
 
-use Any::Moose 'Role';
+use Moose::Role;
 use AnyEvent;
 use Class::MOP;
 use Carp qw/croak/;
@@ -21,8 +21,7 @@ Mischa Spiegelmock, C<< <revmischa at cpan.org> >>
 
 =cut
 
-#use Any::Moose 'X::Getopt'; # why the heck does this not work?
-with 'MouseX::Getopt';
+with 'MooseX::Getopt';
 
 # local source repo checkout
 has 'source_dir' => (

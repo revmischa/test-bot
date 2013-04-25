@@ -1,6 +1,6 @@
 package Test::Bot::Source;
 
-use Any::Moose 'Role';
+use Moose::Role;
 
 # start watching source repo for changes
 requires 'watch';

@@ -2,7 +2,7 @@
 
 package Test::Bot::Commit;
 
-use Any::Moose;
+use Moose;
 use DateTime;
 
 # e.g. "Mischa Spiegelmock <revmischa@cpan.org>"

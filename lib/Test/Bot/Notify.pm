@@ -1,6 +1,6 @@
 package Test::Bot::Notify;
 
-use Any::Moose 'Role';
+use Moose::Role;
 
 has 'bot' => (
     is => 'rw',

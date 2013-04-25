@@ -1,8 +1,13 @@
 package Test::Bot::Source::Kiln;
 
-use Any::Moose 'Role';
-BEGIN { extends 'Test::Bot::Source::GitHub' }
+use Moose::Role;
+with 'Test::Bot::Source::Webhook';
+with 'Test::Bot::Source';
 
+use JSON;
+use DateTime::Format::Flexible;
+use Test::Bot::Commit;
+use Carp qw/croak/;
 # sample:
 #
 # {"pusher":{"fullName":"Mischa Spiegelmock","email":"mischa@doctorbase.com","accesstoken":false},
@@ -30,7 +35,8 @@ sub parse_payload {
         # parse commit date
         my $timestamp = $commit_info->{timestamp};
         if ($timestamp) {
-            my $dt = DateTime::Format::ISO8601->parse_datetime($timestamp);
+            my $dt = DateTime::Format::Flexible->parse_datetime($timestamp);
+            $dt->set_time_zone('America/Los_Angeles');
             $c{timestamp} = $dt if $dt;
         }
 
@@ -46,7 +52,10 @@ sub parse_payload {
         push @commits, $commit;
     }
 
-    $self->test_and_notify(@commits);
+    return @commits;
 }
+
+# not implemented ... YET
+sub install {}
 
 1;

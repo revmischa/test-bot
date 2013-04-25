@@ -1,6 +1,6 @@
 package Test::Bot::TestHarness;
 
-use Any::Moose 'Role';
+use Moose::Role;
 use File::Find;
 
 requires 'run_tests_for_commit';
