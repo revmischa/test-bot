@@ -45,23 +45,12 @@ after 'setup' => sub {
     die "irc_channel is required" unless $self->irc_channel;
 };
 
-after notify => sub {
-    my ($self, @commits) = @_;
+after 'notify' => {
+    my ($self, @messages) = @_;
 
     my $client = $self->_irc_client && $self->_connected ?
         $self->_irc_client : AnyEvent::IRC::Client->new;
 
-    my $send_notification = sub {
-        foreach my $commit (@commits) {
-            my $msg = $self->format_commit($commit) or next;
-
-            $client->send_long_message('utf-8', 0, PRIVMSG => $self->irc_channel, $msg);
-            $client->reg_cb(buffer_empty => sub {
-                $client->disconnect;
-            });
-        }
-    };
-    
     unless ($self->_connected) {
         $client->reg_cb(
             connect => sub {
@@ -87,9 +76,14 @@ after notify => sub {
         
             registered => sub {
                 my ($con) = @_;
-            
+
                 # connected and ready to go
-                $send_notification->();
+                foreach my $msg (@messages) {
+                    $client->send_long_message('utf-8', 0, PRIVMSG => $self->irc_channel, $msg);
+                    $client->reg_cb(buffer_empty => sub {
+                        $client->disconnect;
+                    });
+                }
             },
         );
 

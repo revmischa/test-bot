@@ -8,8 +8,20 @@ has 'bot' => (
     required => 1,
 );
 
-sub notify {
+sub notify_commits {
     my ($self, @commits) = @_;
+
+    my @messages;
+    foreach my $commit (@commits) {
+        my $msg = $self->format_commit($commit) or next;
+        push @messages, $msg;
+    }
+
+    $self->notify(@messages);
+};
+
+sub notify {
+    my ($self, @messages) = @_;
 
 }
 
