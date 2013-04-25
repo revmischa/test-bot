@@ -8,16 +8,8 @@ use JSON;
 use DateTime::Format::Flexible;
 use Test::Bot::Commit;
 use Carp qw/croak/;
-# sample:
-#
-# {"pusher":{"fullName":"Mischa Spiegelmock","email":"mischa@doctorbase.com","accesstoken":false},
-# "repository":{"url":"https://doctorbase.kilnhg.com/Code/Repositories/Group/db","name":"db","description":"","central":true,"id":128503},
-# "commits":[{
-#     "id":"80f91608deee8c6b1a7319600361a09c55b9d99b","revision":18163,"url":"https://doctorbase.kilnhg.com/Code/Repositories/Group/db/History/80f91608deee","message":"#1809 make it so high-charts don't interfere with scrolling on phones","timestamp":"4/25/2013 5:35:40 AM","author":"Matt LeVeck <mleveck@gmail.com>","branch":"default","tags":["tip"]
-# },...]
 
 # got a set of commits
-# overrides GitHub's payload parser
 sub parse_payload {
     my ($self, $payload) = @_;
 
