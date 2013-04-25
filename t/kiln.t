@@ -36,7 +36,6 @@ sub run_tests {
     is($commits[0]->message, 'bliggity bloggity', 'Parsed message');
 }
 
-
 BEGIN {
     package testbot::Kiln;
 
