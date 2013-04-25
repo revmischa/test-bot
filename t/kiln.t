@@ -7,17 +7,14 @@ use FindBin;
 use lib "$FindBin::Bin/../lib";
 
 use Test::More;
-use Test::Bot;
-use Test::Bot::Kiln;
+use Test::Bot::Source::Kiln;
 
 run_tests();
 
 done_testing();
 
 sub run_tests {
-    my $bot = Test::Bot::Source::Kiln->new_with_options(
-        force => 0,
-    );
+    my $bot = testbot::Kiln->new;
 
     # test webhook parsing
     my $webhook_output = q|{
@@ -39,3 +36,11 @@ sub run_tests {
     is($commits[0]->message, 'bliggity bloggity', 'Parsed message');
 }
 
+
+BEGIN {
+    package testbot::Kiln;
+
+    use Moose;
+    with 'Test::Bot::Source::Webhook';
+    with 'Test::Bot::Source::Kiln';
+}
