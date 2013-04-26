@@ -4,9 +4,13 @@ use Moose::Role;
 with 'Test::Bot::Source::Webhook';
 with 'Test::Bot::Source';
 
+use WWW::Shorten 'Shorl';
+use WWW::Shorten 'TinyURL';
+
 use JSON;
 use DateTime::Format::Flexible;
 use Test::Bot::Commit;
+use Test::Bot::Changeset;
 use Carp qw/croak/;
 
 # got a set of commits
@@ -15,10 +19,16 @@ sub parse_payload {
 
     my $parsed = decode_json($payload) or return;
 
+    #use Data::Dump qw/ddx/;
+    #ddx($parsed);
+
     # who pushed these commits?
     my $pusher = $parsed->{pusher};
-    my $pusher_name = $pusher->{fullName} || 'An unknown user';
-    my $repo_name = $parsed->{repository}{name} || 'unknown repo';
+    my $pusher_name = $pusher->{fullName};
+    my $pusher_email = $pusher->{email};
+    my $repo_name = $parsed->{repository}{name};
+    my $repo_url = $parsed->{repository}{url};
+    my $repo_desc = $parsed->{repository}{description};
 
     my $commit_info_ref = $parsed->{commits} || [];
     my $commit_count = @$commit_info_ref;
@@ -44,19 +54,23 @@ sub parse_payload {
         $c{files} = \@files;
 
         $c{id} = $commit_info->{id};
+        $c{url} = makeashorterlink($commit_info->{url});
+        $c{tags} = $commit_info->{tags} || [];
 
         my $commit = Test::Bot::Commit->new(%c);
         push @commits, $commit;
     }
 
-    # let's notify of the push right away
-    my $push_msg = "$pusher_name pushed $commit_count commit" .
-                      ($commit_count == 1 ? '' : 's') .
-                      " to $repo_name";
-    warn $push_msg;
-    $self->notify($push_msg);
+    my $cs = Test::Bot::Changeset->new(
+        author_name => $pusher_name,
+        author_email => $pusher_email,
+        repo_name => $repo_name,
+        repo_description => $repo_desc,
+        repo_url => $repo_url,
+        commits => \@commits,
+    );
 
-    return @commits;
+    return $cs;
 }
 
 # not implemented ... YET

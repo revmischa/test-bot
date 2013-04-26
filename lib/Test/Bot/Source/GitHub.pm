@@ -7,6 +7,7 @@ with 'Test::Bot::Source::Webhook';
 use JSON;
 use DateTime::Format::Flexible;
 use Test::Bot::Commit;
+use Test::Bot::Changeset;
 use Carp qw/croak/;
 
 # got a set of commits
@@ -48,7 +49,10 @@ sub parse_payload {
         push @commits, $commit;
     }
 
-    return @commits;
+    # todo: parse changeset info and add it here
+    return Test::Bot::Changeset->new(
+        commits => \@commits,
+    );
 }
 
 sub install {

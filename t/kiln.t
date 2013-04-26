@@ -19,7 +19,7 @@ sub run_tests {
     # test webhook parsing
     my $webhook_output = q|{
         "pusher":{"fullName":"Mistor Wiggles","email":"greaseball@food.com","accesstoken":false},
-         "repository":{"url":"https://hie.kilnhg.com/Code/Repositories/Group/ok/History/80808080","name":"ok","description":"","central":true,"id":128503},
+         "repository":{"url":"https://hie.kilnhg.com/Code/Repositories/Group/ok","name":"ok","description":"","central":true,"id":128503},
          "commits":[{
             "id":"80f91608deee8c6b1a7319600361a09c55b9d99b",
             "revision":18163,

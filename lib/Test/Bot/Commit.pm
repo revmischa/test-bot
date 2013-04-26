@@ -36,6 +36,17 @@ has 'timestamp' => (
     isa => 'DateTime',
 );
 
+has 'tags' => (
+    is => 'rw',
+    isa => 'ArrayRef[Str]',
+    default => sub { [] },
+);
+
+has 'url' => (
+    is => 'rw',
+    isa => 'Str|Undef',
+);
+
 has 'test_success' => (
     is => 'rw',
     isa => 'Bool',

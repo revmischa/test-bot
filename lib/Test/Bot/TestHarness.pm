@@ -38,11 +38,14 @@ sub _build_test_files {
 
 # run unit tests for each commit, notify on failure
 sub test_and_notify {
-    my ($self, @commits) = @_;
+    my ($self, $changeset) = @_;
+
+    # let's notify of the push right away
+    $self->notify_changeset_push($changeset);
 
     return unless $self->tests_enabled;
 
-    foreach my $commit (@commits) {
+    foreach my $commit (@{ $changeset->commits }) {
         # check out commit, make sure that is what we are testing
         unless ($self->checkout($commit)) {
             $commit->test_success(0);
@@ -58,7 +61,17 @@ sub test_and_notify {
     }
 
     # send notifications of tests
-    $self->notify_commits(@commits);
+    $self->notify_changeset_test_results($changeset);
+}
+
+sub notify_changeset_push {
+    my ($self, $cs) = @_;
+    $_->notify_changeset_push($cs) for $self->notify_instances;
+}
+
+sub notify_changeset_test_results {
+    my ($self, $cs) = @_;
+    $_->notify_changeset_test_results($cs) for $self->notify_instances;
 }
 
 # checkout $commit into $source_dir

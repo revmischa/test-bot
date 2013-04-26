@@ -40,8 +40,8 @@ sub watch {
         } elsif ($req->path eq '/post_receive') {
             my $payload = $req->param('payload');
             if ($payload) {
-                my @commits = $self->parse_payload($payload);
-                $self->test_and_notify(@commits);
+                my $changeset = $self->parse_payload($payload);
+                $self->test_and_notify($changeset);
             } else {
                 $res->status(400);
                 $res->content("invalid request");

@@ -91,6 +91,7 @@ has '_configured_test_harness'  => ( is => 'rw', isa => 'Bool' );
 has '_configured_notifications' => ( is => 'rw', isa => 'Bool' );
 
 requires 'install';
+
 requires 'watch';
 
 sub load_test_harness {
@@ -118,16 +119,6 @@ sub load_notify_modules {
 
         print "+Loaded $module notification module\n";
     }
-}
-
-sub notify {
-    my ($self, @messages) = @_;
-    $_->notify(@messages) for $self->notify_instances;
-}
-
-sub notify_commits {
-    my ($self, @commits) = @_;
-    $_->notify_commits(@commits) for $self->notify_instances;
 }
 
 sub configure_test_harness {
