@@ -44,69 +44,97 @@ after 'setup' => sub {
 
     die "irc_host is required" unless $self->irc_host;
     die "irc_channel is required" unless $self->irc_channel;
+
+    $self->connect_irc;
 };
+
+sub deliver_msg {
+    my ($self, @messages) = @_;
+
+    my $msg = join("\n", @messages);
+    my @lines = $self->_irc_client->send_long_message('utf-8', 0, PRIVMSG => $self->irc_channel, $msg);
+}
 
 after 'notify' => sub {
     my ($self, @messages) = @_;
 
+    if ($self->_connected) {
+        # already connected
+        $self->deliver_msg(@messages);
+    } else {
+        $self->connect_irc(sub { $self->deliver_msg(@messages) });
+    }
+};
+
+sub connect_irc {
+    my ($self, $cb) = @_;
+
     my $client = $self->_irc_client && $self->_connected ?
         $self->_irc_client : AnyEvent::IRC::Client->new(send_initial_whois => 1);
 
-    my $deliver = sub {
-        my $msg = join("\n", @messages);
-        my @lines = $client->send_long_message('utf-8', 0, PRIVMSG => $self->irc_channel, $msg);
-    };
+    # connect...
+    $client->reg_cb(
+        connect => sub {
+            my ($con, $err) = @_;
+            if (defined $err) {
+                warn "IRC connect error: $err\n";
+                return;
+            }
+            $self->_connected(1);
+        },
 
-    if ($self->_connected) {
-        # already connected
-        $deliver->();
-    } else {
-        # connect...
-        $client->reg_cb(
-            connect => sub {
-                my ($con, $err) = @_;
-                if (defined $err) {
-                    warn "IRC connect error: $err\n";
-                    return;
-                }
-                $self->_connected(1);
-            },
+        publicmsg => sub {
+            my ($con, $chan, $msg_parsed) = @_;
 
-            error => sub {
-                my ($con, $code, $message, $ircmsg) = @_;
-                warn "IRC error $code $message: $ircmsg\n";
-                $con->disconnect;
-            },
+            my $msgref = $msg_parsed->{params};
+            my $msg = $msgref->[-1];
+
+            my $meth = $self->bot->meta->find_method_by_name('irc_publicmsg');
+            if ($meth) {
+                $meth->execute($self, $con, $chan, $msg);
+            }
+        },
+
+        error => sub {
+            my ($con, $code, $message, $ircmsg) = @_;
+            warn "IRC error $code $message: $ircmsg\n";
+            $con->disconnect;
+        },
             
-            disconnect => sub {
-                warn "disconnected";
-                $self->_connected(0);
-                $self->clear_irc_client;
-                #undef $client;
-            },
+        disconnect => sub {
+            warn "disconnected";
+            $self->_connected(0);
+            $self->clear_irc_client;
+            #undef $client;
+        },
         
-            registered => sub {
-                my ($con) = @_;
+        registered => sub {
+            my ($con) = @_;
 
-                # connected and ready to go
-                $client->reg_cb(buffer_empty => sub {
-                    # it would be cool to disconnect after sending out messages
-                    # but this event always fires waaay too early
-                    #$client->disconnect;
-                });
-                $deliver->();
-            },
-        );
+            $con->send_msg(JOIN => $self->irc_channel);
 
-        $self->_irc_client($client);
-        $client->connect($self->irc_host, $self->irc_port, { nick => $self->irc_nick });
-    }
+            # connected and ready to go
+            $client->reg_cb(buffer_empty => sub {
+                                # it would be cool to disconnect after sending out messages
+                                # but this event always fires waaay too early
+                                #$client->disconnect;
+                            });
+            $cb->() if $cb;
+        },
+    );
+
+    $self->_irc_client($client);
+    $client->connect($self->irc_host, $self->irc_port, { nick => $self->irc_nick });
 };
 
 sub _irc_fmt {
     my ($txt, $color) = @_;
-
     return "\033[${color}m" . $txt . "\033[0m";
+}
+
+sub _irc_bold {
+    my ($txt) = @_;
+    return "\033[1m" . $txt . "\033[2m";
 }
 
 sub format_changeset_push {
@@ -116,7 +144,11 @@ sub format_changeset_push {
     my $commit_count = scalar(@commits);
     my $name = $cs->author_name ? _irc_fmt($cs->author_name, 35) : 'Unknown user';
     my $count = _irc_fmt($commit_count, 36);
-    my $repo_name = _irc_fmt($cs->repo_name, 33) || 'unknown repo';
+
+    my $repo_name = _irc_bold(
+        _irc_fmt($cs->repo_name, 35) || 'unknown repo'
+    );
+
     my $push_msg = "$name pushed " . _irc_fmt($commit_count, 36)
         . " commit" . ($commit_count == 1 ? '' : 's')
         . " to $repo_name";
@@ -145,6 +177,7 @@ sub format_commit_test_result {
     # pass/fail
     my $status = $commit->test_success
         ? _fmt_irc('PASS', 32) : _fmt_irc('FAIL', 31);
+    $status = _irc_bold($status);
 
     my $msg = $self->format_commit($commit);
 
@@ -169,10 +202,13 @@ sub format_commit {
     my $ret = "$author: $id - $msg";
 
     # tags
-    $ret .= " [\033[34m" . join(', ', @{ $commit->tags })
-        . "\033[0m]" if @{ $commit->tags };
+    my $tags = join(', ', @{ $commit->tags });
+    $ret .= ' [' . _irc_fmt($tags, 32) . ']'
+        if @{ $commit->tags };
 
     $ret .= " ($url)" if $url;
+
+    warn $ret . "\n";
 
     return $ret;
 }

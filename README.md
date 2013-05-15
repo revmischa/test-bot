@@ -1,10 +1,9 @@
 This is a bot that can be configured to watch for new commits to a
 repo, run unit tests for each commit, and notify developers of failed
-tests.
+tests. It also can notify you of new commits in an IRC channel.
 
-Currently it only supports github repos. You must create a
-post_receive hook and point it at your bot. This will be automated via
-the GitHub API.
+Currently it supports GitHub and Kiln repos and. You must create a
+post_receive hook and point it at your bot.
 
 At present it only supports notifications via IRC. Plans are to
 include email and web page outputs as well.
@@ -42,5 +41,5 @@ $commit` will be performed when running tests for a commit. This will
 delete untracked (and not ignored) files and changes, so be careful.
 
 If you are interested in using this program and would like to help
-develop it further, please let me know via github, email or IRC.
+develop it further, please let me know via GitHub, email or IRC.
 
