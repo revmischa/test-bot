@@ -199,14 +199,16 @@ sub format_commit {
     my $msg = _irc_fmt($commit->message, 33);
     my $url = $commit->url;
 
-    my $ret = "$author: $id - $msg";
+    my $ret = "$author: $id";
 
     # tags
     my $tags = join(', ', @{ $commit->tags });
     $ret .= ' [' . _irc_fmt($tags, 32) . ']'
         if @{ $commit->tags };
 
-    $ret .= " ($url)" if $url;
+    $ret .= " $url" if $url;
+
+    $ret .= " $msg";
 
     warn $ret . "\n";
 
